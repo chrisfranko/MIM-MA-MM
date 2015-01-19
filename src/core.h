@@ -9,6 +9,7 @@
 #include "script.h"
 #include "serialize.h"
 #include "uint256.h"
+#include "scrypt.h"
 #include "hashskein.h"
 #include "hashqubit.h"
 #include "hashblake.h"
@@ -18,11 +19,13 @@
 #include <stdint.h>
 
 enum {
-    ALGO_BLAKE = 0,
-    ALGO_SKEIN = 1,
-    ALGO_QUBIT = 2,
-    ALGO_YESCRYPT = 3,
-    ALGO_X11 = 4,
+	ALGO_SCRYPT= 0,
+	ALGO_SHA256D = 1,
+    ALGO_BLAKE = 2,
+    ALGO_SKEIN = 3,
+    ALGO_QUBIT = 4,
+    ALGO_YESCRYPT = 5,
+    ALGO_X11 = 6,
     NUM_ALGOS };
 
 enum
@@ -32,10 +35,12 @@ enum
 
     // algo
     BLOCK_VERSION_ALGO       = (7 << 9),
-    BLOCK_VERSION_SKEIN      = (1 << 9),
-    BLOCK_VERSION_QUBIT      = (2 << 9),
-    BLOCK_VERSION_YESCRYPT   = (3 << 9),
-    BLOCK_VERSION_X11        = (4 << 9),
+	BLOCK_VERSION_SHA256D    = (1 << 9),
+	BLOCK_VERSION_BLAKE      = (2 << 9),
+    BLOCK_VERSION_SKEIN      = (3 << 9),
+    BLOCK_VERSION_QUBIT      = (4 << 9),
+    BLOCK_VERSION_YESCRYPT   = (5 << 9),
+    BLOCK_VERSION_X11        = (6 << 9),
 };
 
 inline int GetAlgo(int nVersion)
@@ -43,6 +48,10 @@ inline int GetAlgo(int nVersion)
     switch (nVersion & BLOCK_VERSION_ALGO)
     {
         case 0:
+			break;
+		case BLOCK_VERSION_SHA256D:
+            return ALGO_SHA256D;
+		case BLOCK_VERSION_BLAKE:
             return ALGO_BLAKE;
         case BLOCK_VERSION_SKEIN:
             return ALGO_SKEIN;
@@ -53,13 +62,17 @@ inline int GetAlgo(int nVersion)
         case BLOCK_VERSION_X11:
             return ALGO_X11;
     }
-    return ALGO_BLAKE;
+    return ALGO_SCRYPT;
 }
 
 inline std::string GetAlgoName(int Algo)
 {
     switch (Algo)
     {
+		case ALGO_SCRYPT:
+            return std::string("Scrypt");
+		case ALGO_SHA256D:
+            return std::string("SHA256D");
         case ALGO_BLAKE:
             return std::string("Blake");
         case ALGO_SKEIN:
@@ -92,10 +105,10 @@ static const int BLOCK_VERSION_AUXPOW = (1 << 8);
 static const int BLOCK_VERSION_CHAIN_START = (1 << 16);
 static const int BLOCK_VERSION_CHAIN_END = (1 << 30);
 
-// Unitus aux chain ID = 0x009B (155)
-static const int AUXPOW_CHAIN_ID = 0x009B;
-static const int AUXPOW_START_MAINNET = 1; //TODO change me
-static const int AUXPOW_START_TESTNET = 1;
+// MagicInternetMoney aux chain ID = 0x009B (155)
+static const int AUXPOW_CHAIN_ID = 0x0086;
+static const int AUXPOW_START_MAINNET = 173774; //TODO change me
+static const int AUXPOW_START_TESTNET = 173774;
 
 /** No amount larger than this (in satoshi) is valid */
 static const int64_t MAX_MONEY = 100000000 * COIN;
@@ -495,6 +508,15 @@ public:
     {
         switch (algo)
         {
+			case ALGO_SCRYPT:
+				{
+					uint256 thash;
+					// Caution: scrypt_1024_1_1_256 assumes fixed length of 80 bytes
+					scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+					return thash;
+				}
+			case ALGO_SHA256D:
+				return Hash(BEGIN(nVersion), END(nNonce));
             case ALGO_BLAKE:
                 return HashBlake(BEGIN(nVersion), END(nNonce));
             case ALGO_SKEIN:

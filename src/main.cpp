@@ -28,7 +28,7 @@ using namespace std;
 using namespace boost;
 
 #if defined(NDEBUG)
-# error "Unitus cannot be compiled without assertions."
+# error "MagicInternetMoney cannot be compiled without assertions."
 #endif
 
 //
@@ -49,11 +49,12 @@ bool fReindex = false;
 bool fBenchmark = false;
 bool fTxIndex = false;
 unsigned int nCoinCacheSize = 5000;
+int NEW_BLOCK_TARGET = 400000;
 
 /** Fees smaller than this (in satoshi) are considered zero fee (for transaction creation) */
-int64_t CTransaction::nMinTxFee = 1000000;  // 0.01 UIS
+int64_t CTransaction::nMinTxFee = 1000000;  // 0.01 MIM
 /** Fees smaller than this (in satoshi) are considered zero fee (for relaying and mining) */
-int64_t CTransaction::nMinRelayTxFee = 1000000; // 0.01 UIS
+int64_t CTransaction::nMinRelayTxFee = 1000000; // 0.01 MIM
 
 struct COrphanBlock {
     uint256 hashBlock;
@@ -74,10 +75,10 @@ void EraseOrphansFor(NodeId peer);
 // Constant stuff for coinbase transactions we create:
 CScript COINBASE_FLAGS;
 
-const string strMessageMagic = "Unitus Signed Message:\n";
+const string strMessageMagic = "MagicInternetMoney Signed Message:\n";
 
 // Settings
-int miningAlgo = ALGO_BLAKE;
+int miningAlgo = ALGO_SCRYPT;
 
 // Internal stuff
 namespace {
@@ -1256,24 +1257,26 @@ const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
 
 int64_t GetBlockValue(int nHeight, int64_t nFees)
 {
-	// initial mining phase, first 1999 blocks, reward grows from 1 to 64 COIN.
-	// after that, reward decays by 1% (compound) every 10080 blocks (7 days) over next 3.9 million blocks 
-	// after that point reward is 2 COIN forever after.
-	
-	int64_t nSubsidy = 0;
-	
-	if(nHeight<1999)
-		nSubsidy = (1 * COIN) << (nHeight + 1)/300;
-	else if(nHeight<3933199)
-		nSubsidy = 100 * pow(double(0.99), (nHeight-1999)/10080) * COIN;
-	else
-		nSubsidy = 2 * COIN;
-	
+    int64_t nSubsidy = 0 * COIN;
+
+    if(nHeight == 1)   
+                        nSubsidy = 1000000000 * COIN;
+		else if(nHeight < 2880) 
+                        nSubsidy = 1000 * COIN;
+                else if(nHeight < 86400) 
+                        nSubsidy = 40000 * COIN;
+                else if(nHeight < 173774)
+                        nSubsidy = 20000 * COIN;
+                else if(nHeight < NEW_BLOCK_TARGET)
+                        nSubsidy = 100 * COIN;
+				else
+						nSubsidy = 700 * COIN;
+
     return nSubsidy + nFees;
 }
 
-static const int64_t nTargetTimespan = 5 * 60; // 5 minutes (NUM_ALGOS * 60 seconds)
-static const int64_t nTargetSpacing = 5 * 60; // 5 minutes (NUM_ALGOS * 60 seconds)
+static const int64_t nTargetTimespan = 7 * 60; // 5 minutes (NUM_ALGOS * 60 seconds)
+static const int64_t nTargetSpacing = 7 * 60; // 5 minutes (NUM_ALGOS * 60 seconds)
 static const int64_t nInterval = 1; // re-targets every blocks
 
 static const int64_t nAveragingInterval = 10; // 10 blocks
@@ -1314,12 +1317,136 @@ unsigned int ComputeMinWork(unsigned int nBase, int64_t nTime, int algo)
 	return Params().ProofOfWorkLimit(algo).GetCompact();
 }
 
+unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
+	
+	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+    LogPrintf("Proof Of Work Limit For Algo %i, is % i/n", algo, nProofOfWorkLimit);
+
+    // Genesis block
+    if (pindexLast == NULL){
+		LogPrintf("Genesis Block Difficulty");
+        return nProofOfWorkLimit;
+	}
+	const CBlockIndex* pindexPrevAlgo = GetLastBlockIndexForAlgo(pindexLast, algo);
+    if (pindexPrevAlgo == NULL){
+		LogPrintf("pindexPrevAlgo == NULL for Algo %i, is % i/n", algo, nProofOfWorkLimit);
+        return nProofOfWorkLimit;
+	}
+    /* Franko Multi Algo Gravity Well */
+    const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
+    const CBlockIndex   *BlockReading                    = pindexLast;
+
+	int					 AlgoCounter					 = 0;
+    uint64_t             PastBlocksMass                  = 0;
+    int64_t              PastRateActualSeconds           = 0;
+    int64_t              PastRateTargetSeconds           = 0;
+    double               PastRateAdjustmentRatio         = double(1);
+    CBigNum               PastDifficultyAverage;
+    CBigNum               PastDifficultyAveragePrev;
+    CBigNum               BlockReadingDifficulty;
+    double               EventHorizonDeviation;
+    double               EventHorizonDeviationFast;
+    double               EventHorizonDeviationSlow;
+	int64_t TargetBlockSpacing              = 30; // == 1 minute
+	unsigned int         TimeDaySeconds                  = 60 * 60 * 24;
+	int64_t              PastSecondsMin                  = TimeDaySeconds * 0.01; // == 6300 Seconds
+	int64_t              PastSecondsMax                  = TimeDaySeconds * 0.14; // == 604800 Seconds
+
+	if(BlockReading->nHeight >= NEW_BLOCK_TARGET){
+		TargetBlockSpacing              = 7*60; // == 1 minute
+		TimeDaySeconds                  = 60 * 60 * 24;
+		PastSecondsMin                  = TimeDaySeconds * 0.25; // == 6300 Seconds
+		PastSecondsMax                  = TimeDaySeconds * 7; // == 604800 Seconds
+	}
+    uint64_t             PastBlocksMin                   = PastSecondsMin / TargetBlockSpacing; // == 360 blocks
+    uint64_t             PastBlocksMax                   = PastSecondsMax / TargetBlockSpacing; // == 10080 blocks
+
+	//loop through and count the blocks found by the algo
+	for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
+        if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
+		// Makes sure we are only calculating blocks from the specified algo
+		if (BlockReading->GetAlgo() != algo){ continue; }
+		AlgoCounter++;
+		BlockReading = BlockReading->pprev;
+	}
+
+    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 ||
+        (uint64_t)BlockLastSolved->nHeight < PastBlocksMin ||
+			AlgoCounter < PastBlocksMin) {
+        return Params().ProofOfWorkLimit(algo).GetCompact();
+    }
+    
+    int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
+    
+    for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
+        if (PastBlocksMax > 0 && i > AlgoCounter) { break; }
+		// Makes sure we are only calculating blocks from the specified algo
+		if (BlockReading->GetAlgo() != algo){ continue; }
+
+        PastBlocksMass++;
+
+         if (i == 1)        { PastDifficultyAverage.SetCompact(BlockReading->nBits); }
+                else                { PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
+                PastDifficultyAveragePrev = PastDifficultyAverage;
+
+        if (LatestBlockTime < BlockReading->GetBlockTime()) {
+                LatestBlockTime = BlockReading->GetBlockTime();
+        }
+        PastRateActualSeconds = LatestBlockTime - BlockReading->GetBlockTime();
+        PastRateTargetSeconds = TargetBlockSpacing * PastBlocksMass;
+        PastRateAdjustmentRatio = double(1);
+        
+        if (PastRateActualSeconds < 1) { PastRateActualSeconds = 1; }
+        
+        if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
+            PastRateAdjustmentRatio = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
+        }
+        EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
+        EventHorizonDeviationFast               = EventHorizonDeviation;
+        EventHorizonDeviationSlow               = 1 / EventHorizonDeviation;
+
+        if (PastBlocksMass >= PastBlocksMin) {
+            if ((PastRateAdjustmentRatio <= EventHorizonDeviationSlow) ||
+                (PastRateAdjustmentRatio >= EventHorizonDeviationFast)) {
+                assert(BlockReading);
+                break;
+            }
+        }
+        if (BlockReading->pprev == NULL) { assert(BlockReading); break; }
+        BlockReading = BlockReading->pprev;
+    }
+
+    CBigNum bnNew(PastDifficultyAverage);
+    if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
+        bnNew *= PastRateActualSeconds;
+        bnNew /= PastRateTargetSeconds;
+    }
+    if (bnNew > Params().ProofOfWorkLimit(algo)) { bnNew = Params().ProofOfWorkLimit(algo); }
+
+    // debug print
+
+        LogPrintf("Franko Multi Algo Gravity Well\n");
+    
+    LogPrintf("PastRateAdjustmentRatio =  %g    PastRateTargetSeconds = %d    PastRateActualSeconds = %d\n",
+               PastRateAdjustmentRatio, PastRateTargetSeconds, PastRateActualSeconds);
+    LogPrintf("Before: %08x  %s\n", BlockLastSolved->nBits, CBigNum().SetCompact(BlockLastSolved->nBits).getuint256().ToString());
+    LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+
+    return bnNew.GetCompact();
+}
+
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
+{
+	      return KimotoGravityWell(pindexLast, algo);
+}
+/*
 static const int64_t nMinActualTimespanInitial = nAveragingTargetTimespan * (100 - nMaxAdjustUpInitial) / 100;
 static const int64_t nMaxActualTimespanInitial = nAveragingTargetTimespan * (100 + nMaxAdjustDownInitial) / 100;
 static const int64_t nMinActualTimespanV1 = nAveragingTargetTimespan * (100 - nMaxAdjustUp) / 100;
 static const int64_t nMaxActualTimespanV1 = nAveragingTargetTimespan * (100 + nMaxAdjustDown) / 100;
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
+
+unsigned int GetNextWorkRequired_v2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
 {
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
 
@@ -1390,15 +1517,10 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 	// initial mining phase (height<1999), allow up to nMinActualTimespanInitial and nMaxActualTimespanInitial change in difficulty.
     int64_t nMinActualTimespan;
 	int64_t nMaxActualTimespan;
-    if (pindexLast->nHeight < 1999)
+    if (pindexLast->nHeight < NEW_BLOCK_TARGET)
 	{
         nMinActualTimespan = nMinActualTimespanInitial;
 		nMaxActualTimespan = nMaxActualTimespanInitial;
-	}
-    else
-	{
-        nMinActualTimespan = nMinActualTimespanV1;
-		nMaxActualTimespan = nMaxActualTimespanV1;
 	}
 		
     if (nActualTimespan < nMinActualTimespan)
@@ -1424,7 +1546,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     return bnNew.GetCompact();
 }
-
+*/
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo)
 {
     CBigNum bnTarget;
@@ -3280,7 +3402,7 @@ bool InitBlockIndex() {
         return true;
 
     // Use the provided setting for -txindex in the new database
-    fTxIndex = GetBoolArg("-txindex", false);
+    fTxIndex = GetBoolArg("-txindex", true);
     pblocktree->WriteFlag("txindex", fTxIndex);
     LogPrintf("Initializing databases...\n");
 

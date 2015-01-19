@@ -119,7 +119,7 @@ Value getgenerate(const Array& params, bool fHelp)
         throw runtime_error(
             "getgenerate\n"
             "\nReturn if the server is set to generate coins or not. The default is false.\n"
-            "It is set with the command line argument -gen (or unitus.conf setting gen)\n"
+            "It is set with the command line argument -gen (or magicinternetmoney.conf setting gen)\n"
             "It can also be set with the setgenerate call.\n"
             "\nResult\n"
             "true|false      (boolean) If the server is set to generate coins or not\n"
@@ -263,6 +263,8 @@ Value getmininginfo(const Array& params, bool fHelp)
     obj.push_back(Pair("pow_algo_id",        miningAlgo));
     obj.push_back(Pair("pow_algo",           GetAlgoName(miningAlgo)));
     obj.push_back(Pair("difficulty",         (double)GetDifficulty(NULL, miningAlgo)));
+	obj.push_back(Pair("difficulty_scrypt", (double)GetDifficulty(NULL, ALGO_SCRYPT)));
+	obj.push_back(Pair("difficulty_sha256d", (double)GetDifficulty(NULL, ALGO_SHA256D)));
     obj.push_back(Pair("difficulty_blake", (double)GetDifficulty(NULL, ALGO_BLAKE)));
     obj.push_back(Pair("difficulty_skein", (double)GetDifficulty(NULL, ALGO_SKEIN)));
     obj.push_back(Pair("difficulty_qubit",   (double)GetDifficulty(NULL, ALGO_QUBIT)));
@@ -306,10 +308,10 @@ Value getwork(const Array& params, bool fHelp)
         );
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Unitus is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "MagicInternetMoney is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Unitus is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "MagicInternetMoney is downloading blocks...");
 
     typedef map<uint256, pair<CBlock*, CScript> > mapNewBlock_t;
     static mapNewBlock_t mapNewBlock;    // FIXME: thread safety
@@ -488,10 +490,10 @@ Value getblocktemplate(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Unitus is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "MagicInternetMoney is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Unitus is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "MagicInternetMoney is downloading blocks...");
 
     // Update block
     static unsigned int nTransactionsUpdatedLast;
@@ -660,10 +662,10 @@ Value getworkaux(const Array& params, bool fHelp)
             );
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Unitus is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "MagicInternetMoney is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Unitus is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "MagicInternetMoney is downloading blocks...");
     
     // We use height plus one because we're testing the next block
     if ((chainActive.Tip()->nHeight+1) < GetAuxPowStartBlock()) {
@@ -826,10 +828,10 @@ Value getauxblock(const Array& params, bool fHelp)
             "the aux proof of work and returns true if it was successful.");
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Unitus is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "MagicInternetMoney is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Unitus is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "MagicInternetMoney is downloading blocks...");
     
     // We use height plus one because we're testing the next block
     if ((chainActive.Tip()->nHeight+1) < GetAuxPowStartBlock()) {

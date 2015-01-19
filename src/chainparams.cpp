@@ -28,13 +28,15 @@ public:
         // The message start string is designed to be unlikely to occur in normal data.
         // The characters are rarely used upper ASCII, not valid as UTF-8, and produce
         // a large 4-byte int at any alignment.
-        pchMessageStart[0] = 0xc5;
-        pchMessageStart[1] = 0xab;
-        pchMessageStart[2] = 0xc6;
-        pchMessageStart[3] = 0x9d;
-        vAlertPubKey = ParseHex("040CAAF716F6AFBF6821C73B9F0BB32D991AABC1838B12C2683F24C1B0D53B269C280F08C4742F1B6735BA57DC5411B29EACB07262E37847EDF1D84529229B967D");
-        nDefaultPort = 50603;
-        nRPCPort = 50604;
+        pchMessageStart[0] = 0x97;
+        pchMessageStart[1] = 0x92;
+        pchMessageStart[2] = 0x04;
+        pchMessageStart[3] = 0x27;
+        vAlertPubKey = ParseHex("04d4da7a5dae4db797d9b0644d57a5cd50e05a70f36091cd62e2fc41c98ded06340be5a43a35e185690cd9cde5d72da8f6d065b499b06f51dcfba14aad859f443a");
+        nDefaultPort = 13913; // M.I.M (MagicInternetMoney) ^_^
+        nRPCPort = 13914;
+		bnProofOfWorkLimit[ALGO_SHA256D] = CBigNum(~uint256(0) >> 32);
+		bnProofOfWorkLimit[ALGO_SCRYPT] = CBigNum(~uint256(0) >> 20);
         bnProofOfWorkLimit[ALGO_BLAKE] = CBigNum(~uint256(0) >> 20);
         bnProofOfWorkLimit[ALGO_SKEIN] = CBigNum(~uint256(0) >> 20);
         bnProofOfWorkLimit[ALGO_QUBIT]  = CBigNum(~uint256(0) >> 20);
@@ -62,23 +64,23 @@ public:
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
         genesis.nTime    = 1419368971;
-        genesis.nBits    = 0x1e0fffff;
+        genesis.nBits    = 0x1e0ffff0;
         genesis.nNonce   = 7659762;
 		
         hashGenesisBlock = genesis.GetHash();
 	
-        assert(hashGenesisBlock == uint256("0xd8a2b2439d013a59f3bfc626a33487a3d7d27e42a3c9e0b81af814cd8e592f31"));
+        assert(hashGenesisBlock == uint256("0x5706e2c132a4b9362656fe56568324a9035f540a361f77cadce7af4a55e4b0c8"));
         assert(genesis.hashMerkleRoot == uint256("0x7e86d7e6d123ba67684125d094d010a6e04ab753fd5d601c024c155c0a4eb51e"));
 
-        vSeeds.push_back(CDNSSeedData("seed1.unitus.info", "seed1.unitus.info"));
-        vSeeds.push_back(CDNSSeedData("seed2.unitus.info", "seed2.unitus.info"));
-        vSeeds.push_back(CDNSSeedData("seed3.unitus.info", "seed3.unitus.info"));
-        vSeeds.push_back(CDNSSeedData("seed4.unitus.info", "seed4.unitus.info"));
-        vSeeds.push_back(CDNSSeedData("seed5.unitus.info", "seed5.unitus.info"));
+        vSeeds.push_back(CDNSSeedData("seed1.magicinternetmoney.org", "seed1.magicinternetmoney.org"));
+        vSeeds.push_back(CDNSSeedData("seed2.magicinternetmoney.org", "seed2.magicinternetmoney.org"));
+        vSeeds.push_back(CDNSSeedData("seed3.magicinternetmoney.org", "seed3.magicinternetmoney.org"));
+        vSeeds.push_back(CDNSSeedData("seed4.magicinternetmoney.org", "seed4.magicinternetmoney.org"));
+        vSeeds.push_back(CDNSSeedData("seed5.magicinternetmoney.org", "seed5.magicinternetmoney.org"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = list_of(68);
-        base58Prefixes[SCRIPT_ADDRESS] = list_of(10);
-        base58Prefixes[SECRET_KEY] =     list_of(132);
+        base58Prefixes[PUBKEY_ADDRESS] = list_of(48);
+        base58Prefixes[SCRIPT_ADDRESS] = list_of(5);
+        base58Prefixes[SECRET_KEY] =     list_of(176);
         base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
         base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
 
@@ -138,8 +140,8 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("testseed1.unitus.info", "testseed1.unitus.info"));
-        vSeeds.push_back(CDNSSeedData("testseed2.unitus.info", "testseed2.unitus.info"));
+        vSeeds.push_back(CDNSSeedData("testseed1.magicinternetmoney.info", "testseed1.magicinternetmoney.info"));
+        vSeeds.push_back(CDNSSeedData("testseed2.magicinternetmoney.info", "testseed2.magicinternetmoney.info"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(130);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(192);
@@ -163,6 +165,8 @@ public:
         pchMessageStart[2] = 0xc8;
         pchMessageStart[3] = 0x9d;
 //        nSubsidyHalvingInterval = 150;
+		bnProofOfWorkLimit[ALGO_SHA256D] = CBigNum(~uint256(0) >> 1);
+		bnProofOfWorkLimit[ALGO_SCRYPT] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_BLAKE] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_SKEIN] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_QUBIT]  = CBigNum(~uint256(0) >> 1);

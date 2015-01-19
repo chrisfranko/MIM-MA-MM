@@ -117,7 +117,13 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
     //pblock->nVersion = BLOCK_VERSION_DEFAULT;
     switch (algo)
     {
-        case ALGO_BLAKE:
+		case ALGO_SCRYPT:
+			break;
+		case ALGO_SHA256D:
+			pblock->nVersion |= BLOCK_VERSION_SHA256D;
+			break;
+		case ALGO_BLAKE:
+			pblock->nVersion |= BLOCK_VERSION_BLAKE;
             break;
         case ALGO_SKEIN:
             pblock->nVersion |= BLOCK_VERSION_SKEIN;
@@ -458,7 +464,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 	uint256 hash = pblock->GetHash();
 	uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
 
-	// LogPrintf("DEBUG| UnitusMiner:\n");
+	// LogPrintf("DEBUG| MagicInternetMoneyMiner:\n");
 	// LogPrintf("DEBUG| proof-of-work submitted  \n  algo: %s\nblock-PoWhash: %s\nblock-hash: %s\n  ntarget: %s\n", 
 		// algo,
 		// hashPoW.GetHex(),
@@ -475,7 +481,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
             return error("AUX POW parent hash %s is not under target %s", auxpow->GetParentBlockHash(algo).GetHex().c_str(), hashTarget.GetHex().c_str());
         
         // print to log
-        LogPrintf("UnitusMiner: AUX proof-of-work found; our hash: %s ; parent hash: %s ; target: %s\n",
+        LogPrintf("MagicInternetMoneyMiner: AUX proof-of-work found; our hash: %s ; parent hash: %s ; target: %s\n",
                hash.GetHex().c_str(),
                auxpow->GetParentBlockHash(algo).GetHex().c_str(),
                hashTarget.GetHex().c_str());
@@ -486,7 +492,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
             return false;
 
         // print to log
-        LogPrintf("UnitusMiner: proof-of-work found; hashPoW: %s ; target: %s\n", hashPoW.GetHex().c_str(), hashTarget.GetHex().c_str());
+        LogPrintf("MagicInternetMoneyMiner: proof-of-work found; hashPoW: %s ; target: %s\n", hashPoW.GetHex().c_str(), hashTarget.GetHex().c_str());
     }
     	
     pblock->print();
@@ -496,7 +502,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     {
         LOCK(cs_main);
         if (pblock->hashPrevBlock != chainActive.Tip()->GetBlockHash())
-            return error("UnitusMiner : generated block is stale");
+            return error("MagicInternetMoneyMiner : generated block is stale");
 
         // Remove key from key pool
         reservekey.KeepKey();
@@ -510,7 +516,7 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
         // Process this block the same as if we had received it from another node
         CValidationState state;
         if (!ProcessBlock(state, NULL, pblock))
-            return error("UnitusMiner : ProcessBlock, block not accepted");
+            return error("MagicInternetMoneyMiner : ProcessBlock, block not accepted");
     }
 
     return true;
@@ -757,7 +763,7 @@ void static GenericMiner(CWallet *pwallet, int algo)
 
 void static ThreadBitcoinMiner(CWallet *pwallet)
 {
-    LogPrintf("UnitusMiner miner started\n");
+    LogPrintf("MagicInternetMoneyMiner miner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("bitcoin-miner");
     
@@ -785,7 +791,7 @@ void static ThreadBitcoinMiner(CWallet *pwallet)
 	
     catch (boost::thread_interrupted)
     {
-        LogPrintf("UnitusMiner miner terminated\n");
+        LogPrintf("MagicInternetMoneyMiner miner terminated\n");
         throw;
     }
 }

@@ -37,7 +37,7 @@ Value getinfo(const Array& params, bool fHelp)
             "  \"version\": xxxxx,           (numeric) the server version\n"
             "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
-            "  \"balance\": xxxxxxx,         (numeric) the total unitus balance of the wallet\n"
+            "  \"balance\": xxxxxxx,         (numeric) the total magicinternetmoney balance of the wallet\n"
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
@@ -75,6 +75,8 @@ Value getinfo(const Array& params, bool fHelp)
     obj.push_back(Pair("pow_algo_id",        miningAlgo));
     obj.push_back(Pair("pow_algo",           GetAlgoName(miningAlgo)));
     obj.push_back(Pair("difficulty",         (double)GetDifficulty(NULL, miningAlgo)));
+	obj.push_back(Pair("difficulty_scrypt", (double)GetDifficulty(NULL, ALGO_SCRYPT)));
+	obj.push_back(Pair("difficulty_sha256d", (double)GetDifficulty(NULL, ALGO_SHA256D)));
     obj.push_back(Pair("difficulty_blake", (double)GetDifficulty(NULL, ALGO_BLAKE)));
     obj.push_back(Pair("difficulty_skein",   (double)GetDifficulty(NULL, ALGO_SKEIN)));
     obj.push_back(Pair("difficulty_qubit",   (double)GetDifficulty(NULL, ALGO_QUBIT)));
@@ -137,14 +139,14 @@ Value validateaddress(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "validateaddress \"unitusaddress\"\n"
-            "\nReturn information about the given unitus address.\n"
+            "validateaddress \"magicinternetmoneyaddress\"\n"
+            "\nReturn information about the given magicinternetmoney address.\n"
             "\nArguments:\n"
-            "1. \"bitcoinaddress\"     (string, required) The unitus address to validate\n"
+            "1. \"bitcoinaddress\"     (string, required) The magicinternetmoney address to validate\n"
             "\nResult:\n"
             "{\n"
             "  \"isvalid\" : true|false,         (boolean) If the address is valid or not. If not, this is the only property returned.\n"
-            "  \"address\" : \"unitusaddress\",  (string) The unitus address validated\n"
+            "  \"address\" : \"magicinternetmoneyaddress\",  (string) The magicinternetmoney address validated\n"
             "  \"ismine\" : true|false,          (boolean) If the address is yours or not\n"
             "  \"isscript\" : true|false,        (boolean) If the key is a script\n"
             "  \"pubkey\" : \"publickeyhex\",    (string) The hex value of the raw public key\n"
@@ -253,9 +255,9 @@ Value createmultisig(const Array& params, bool fHelp)
 
             "\nArguments:\n"
             "1. nrequired      (numeric, required) The number of required signatures out of the n keys or addresses.\n"
-            "2. \"keys\"       (string, required) A json array of keys which are unitus addresses or hex-encoded public keys\n"
+            "2. \"keys\"       (string, required) A json array of keys which are magicinternetmoney addresses or hex-encoded public keys\n"
             "     [\n"
-            "       \"key\"    (string) unitus address or hex-encoded public key\n"
+            "       \"key\"    (string) magicinternetmoney address or hex-encoded public key\n"
             "       ,...\n"
             "     ]\n"
 
@@ -290,10 +292,10 @@ Value verifymessage(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 3)
         throw runtime_error(
-            "verifymessage \"unitusaddress\" \"signature\" \"message\"\n"
+            "verifymessage \"magicinternetmoneyaddress\" \"signature\" \"message\"\n"
             "\nVerify a signed message\n"
             "\nArguments:\n"
-            "1. \"unitusaddress\"  (string, required) The unitus address to use for the signature.\n"
+            "1. \"magicinternetmoneyaddress\"  (string, required) The magicinternetmoney address to use for the signature.\n"
             "2. \"signature\"      (string, required) The signature provided by the signer in base 64 encoding (see signmessage).\n"
             "3. \"message\"        (string, required) The message that was signed.\n"
             "\nResult:\n"
@@ -302,11 +304,11 @@ Value verifymessage(const Array& params, bool fHelp)
             "\nUnlock the wallet for 30 seconds\n"
             + HelpExampleCli("walletpassphrase", "\"mypassphrase\" 30") +
             "\nCreate the signature\n"
-            + HelpExampleCli("signmessage", "\"UeMjHZkbFSkJL9PmapMn1HrhmkNvXu2gP7\" \"my message\"") +
+            + HelpExampleCli("signmessage", "\"LhC6qc5qU39esi7u2GFanKQYEKnTfR9fD7\" \"my message\"") +
             "\nVerify the signature\n"
-            + HelpExampleCli("verifymessage", "\"UeMjHZkbFSkJL9PmapMn1HrhmkNvXu2gP7\" \"signature\" \"my message\"") +
+            + HelpExampleCli("verifymessage", "\"LhC6qc5qU39esi7u2GFanKQYEKnTfR9fD7\" \"signature\" \"my message\"") +
             "\nAs json rpc\n"
-            + HelpExampleRpc("verifymessage", "\"UeMjHZkbFSkJL9PmapMn1HrhmkNvXu2gP7\", \"signature\", \"my message\"")
+            + HelpExampleRpc("verifymessage", "\"LhC6qc5qU39esi7u2GFanKQYEKnTfR9fD7\", \"signature\", \"my message\"")
         );
 
     string strAddress  = params[0].get_str();

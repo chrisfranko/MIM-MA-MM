@@ -31,7 +31,7 @@ double GetDifficulty(const CBlockIndex* blockindex, int algo)
     {
         CBlockIndex* tip = chainActive.Tip();
         if (tip == NULL)
-            nBits = Params().ProofOfWorkLimit(ALGO_BLAKE).GetCompact();
+            nBits = Params().ProofOfWorkLimit(ALGO_SCRYPT).GetCompact();
         else
         {
             blockindex = GetLastBlockIndexForAlgo(tip, algo);
@@ -196,7 +196,7 @@ Value getrawmempool(const Array& params, bool fHelp)
             "{                           (json object)\n"
             "  \"transactionid\" : {       (json object)\n"
             "    \"size\" : n,             (numeric) transaction size in bytes\n"
-            "    \"fee\" : n,              (numeric) transaction fee in unitus\n"
+            "    \"fee\" : n,              (numeric) transaction fee in magicinternetmoney\n"
             "    \"time\" : n,             (numeric) local time transaction entered pool in seconds since 1 Jan 1970 GMT\n"
             "    \"height\" : n,           (numeric) block height when transaction entered pool\n"
             "    \"startingpriority\" : n, (numeric) priority when transaction entered pool\n"
@@ -399,8 +399,8 @@ Value gettxout(const Array& params, bool fHelp)
             "     \"hex\" : \"hex\",        (string) \n"
             "     \"reqSigs\" : n,          (numeric) Number of required signatures\n"
             "     \"type\" : \"pubkeyhash\", (string) The type, eg pubkeyhash\n"
-            "     \"addresses\" : [          (array of string) array of unitus addresses\n"
-            "        \"unitusaddress\"     (string) unitus address\n"
+            "     \"addresses\" : [          (array of string) array of magicinternetmoney addresses\n"
+            "        \"magicinternetmoneyaddress\"     (string) magicinternetmoney address\n"
             "        ,...\n"
             "     ]\n"
             "  },\n"

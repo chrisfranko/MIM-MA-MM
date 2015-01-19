@@ -20,8 +20,8 @@
  *
  * \section intro_sec Introduction
  *
- * This is the developer documentation of the reference client for an experimental new digital currency called Unitus (http://www.unitus.org/),
- * which enables instant payments to anyone, anywhere in the world. Unitus uses peer-to-peer technology to operate
+ * This is the developer documentation of the reference client for an experimental new digital currency called MagicInternetMoney (http://www.magicinternetmoney.org/),
+ * which enables instant payments to anyone, anywhere in the world. MagicInternetMoney uses peer-to-peer technology to operate
  * with no central authority: managing transactions and issuing money are carried out collectively by the network.
  *
  * The software is a community-driven open source project, released under the MIT license.
@@ -63,7 +63,7 @@ bool AppInit(int argc, char* argv[])
         //
         // Parameters
         //
-        // If Qt is used, parameters/unitus.conf are parsed in qt/unitus.cpp's main()
+        // If Qt is used, parameters/magicinternetmoney.conf are parsed in qt/magicinternetmoney.cpp's main()
         ParseParameters(argc, argv);
         if (!boost::filesystem::is_directory(GetDataDir(false)))
         {
@@ -85,14 +85,14 @@ bool AppInit(int argc, char* argv[])
 
         if (mapArgs.count("-?") || mapArgs.count("--help"))
         {
-            // First part of help message is specific to unitusd / RPC client
-            std::string strUsage = _("Unitus Core Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n\n" +
+            // First part of help message is specific to magicinternetmoneyd / RPC client
+            std::string strUsage = _("MagicInternetMoney Core Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n\n" +
                 _("Usage:") + "\n" +
-                  "  unitusd [options]                     " + _("Start Unitus Core Daemon") + "\n" +
-                _("Usage (deprecated, use unitus-cli):") + "\n" +
-                  "  unitusd [options] <command> [params]  " + _("Send command to Unitus Core") + "\n" +
-                  "  unitusd [options] help                " + _("List commands") + "\n" +
-                  "  unitusd [options] help <command>      " + _("Get help for a command") + "\n";
+                  "  magicinternetmoneyd [options]                     " + _("Start MagicInternetMoney Core Daemon") + "\n" +
+                _("Usage (deprecated, use magicinternetmoney-cli):") + "\n" +
+                  "  magicinternetmoneyd [options] <command> [params]  " + _("Send command to MagicInternetMoney Core") + "\n" +
+                  "  magicinternetmoneyd [options] help                " + _("List commands") + "\n" +
+                  "  magicinternetmoneyd [options] help <command>      " + _("Get help for a command") + "\n";
 
             strUsage += "\n" + HelpMessage(HMM_BITCOIND);
             strUsage += "\n" + HelpMessageCli(false);
@@ -104,7 +104,7 @@ bool AppInit(int argc, char* argv[])
         // Command-line RPC
         bool fCommandLine = false;
         for (int i = 1; i < argc; i++)
-            if (!IsSwitchChar(argv[i][0]) && !boost::algorithm::istarts_with(argv[i], "unitus:"))
+            if (!IsSwitchChar(argv[i][0]) && !boost::algorithm::istarts_with(argv[i], "magicinternetmoney:"))
                 fCommandLine = true;
 
         if (fCommandLine)
@@ -116,7 +116,7 @@ bool AppInit(int argc, char* argv[])
         fDaemon = GetBoolArg("-daemon", false);
         if (fDaemon)
         {
-            fprintf(stdout, "Unitus server starting\n");
+            fprintf(stdout, "MagicInternetMoney server starting\n");
 
             // Daemonize
             pid_t pid = fork();
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 
     bool fRet = false;
 
-    // Connect unitusd signal handlers
+    // Connect magicinternetmoneyd signal handlers
     noui_connect();
 
     fRet = AppInit(argc, argv);

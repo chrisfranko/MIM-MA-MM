@@ -13,11 +13,11 @@ endif
 bin_PROGRAMS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += unitusd
+  bin_PROGRAMS += magicinternetmoneyd
 endif
 
 if BUILD_BITCOIN_CLI
-  bin_PROGRAMS += unitus-cli
+  bin_PROGRAMS += magicinternetmoney-cli
 endif
 
 SUBDIRS = . $(BUILD_QT) $(BUILD_TEST)
@@ -70,6 +70,7 @@ BITCOIN_CORE_H = \
   version.h \
   walletdb.h \
   wallet.h \
+  scrypt.h \
   sph_blake.h \
   sph_blakefast.h \
   sph_groestl.h \
@@ -188,35 +189,35 @@ nodist_libbitcoin_common_a_SOURCES = $(top_srcdir)/src/obj/build.h
 #
 
 # bitcoind binary #
-unitusd_LDADD = \
+magicinternetmoneyd_LDADD = \
   libbitcoin_server.a \
   libbitcoin_cli.a \
   libbitcoin_common.a \
   $(LIBLEVELDB) \
   $(LIBMEMENV)
 if ENABLE_WALLET
-unitusd_LDADD += libbitcoin_wallet.a
+magicinternetmoneyd_LDADD += libbitcoin_wallet.a
 endif
-unitusd_SOURCES = bitcoind.cpp
+magicinternetmoneyd_SOURCES = bitcoind.cpp
 #
 
 if TARGET_WINDOWS
-unitusd_SOURCES += bitcoind-res.rc
+magicinternetmoneyd_SOURCES += bitcoind-res.rc
 endif
 
 AM_CPPFLAGS += $(BDB_CPPFLAGS)
-unitusd_LDADD += $(BOOST_LIBS) $(BDB_LIBS)
+magicinternetmoneyd_LDADD += $(BOOST_LIBS) $(BDB_LIBS)
 
 # bitcoin-cli binary #
-unitus_cli_LDADD = \
+magicinternetmoney_cli_LDADD = \
   libbitcoin_cli.a \
   libbitcoin_common.a \
   $(BOOST_LIBS)
-unitus_cli_SOURCES = bitcoin-cli.cpp
+magicinternetmoney_cli_SOURCES = bitcoin-cli.cpp
 #
 
 if TARGET_WINDOWS
-unitus_cli_SOURCES += bitcoin-cli-res.rc
+magicinternetmoney_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
 # NOTE: This dependency is not strictly necessary, but without it make may try to build both in parallel, which breaks the LevelDB build system in a race

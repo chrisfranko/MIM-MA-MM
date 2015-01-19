@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2013 The Unitus developers
+// Copyright (c) 2009-2013 The MagicInternetMoney developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -42,11 +42,11 @@ static bool AppInitRPC(int argc, char* argv[])
     if (argc<2 || mapArgs.count("-?") || mapArgs.count("--help"))
     {
         // First part of help message is specific to RPC client
-        std::string strUsage = _("Unitus Core RPC client version") + " " + FormatFullVersion() + "\n\n" +
+        std::string strUsage = _("MagicInternetMoney Core RPC client version") + " " + FormatFullVersion() + "\n\n" +
             _("Usage:") + "\n" +
-              "  unitus-cli [options] <command> [params]  " + _("Send command to Unitus Core") + "\n" +
-              "  unitus-cli [options] help                " + _("List commands") + "\n" +
-              "  unitus-cli [options] help <command>      " + _("Get help for a command") + "\n";
+              "  magicinternetmoney-cli [options] <command> [params]  " + _("Send command to MagicInternetMoney Core") + "\n" +
+              "  magicinternetmoney-cli [options] help                " + _("List commands") + "\n" +
+              "  magicinternetmoney-cli [options] help <command>      " + _("Get help for a command") + "\n";
 
         strUsage += "\n" + HelpMessageCli(true);
 
