@@ -1336,6 +1336,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
     const CBlockIndex   *BlockReading                    = pindexLast;
 
+
 	int					 AlgoCounter					 = 0;
     uint64_t             PastBlocksMass                  = 0;
     int64_t              PastRateActualSeconds           = 0;
@@ -1377,7 +1378,8 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     }
     
     int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
-    
+    // reset blockreading
+	BlockReading = pindexLast;
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if (PastBlocksMax > 0 && i > AlgoCounter) { break; }
 		// Makes sure we are only calculating blocks from the specified algo
