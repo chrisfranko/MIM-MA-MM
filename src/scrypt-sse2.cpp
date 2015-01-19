@@ -27,8 +27,6 @@
  * online backup system.
  */
 
-// Copyright (c) 2013-2014 Franko Developers
-
 #include "scrypt.h"
 #include <stdlib.h>
 #include <stdint.h>
