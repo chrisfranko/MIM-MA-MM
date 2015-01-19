@@ -132,8 +132,9 @@ public:
         strDataDir = "testnet";
 
         // Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1392144019;
-        genesis.nNonce = 1109709;
+        genesis.nTime    = 1392144119;
+        genesis.nBits    = 0x1e0ffff0;
+        genesis.nNonce   = 2024049;
         hashGenesisBlock = genesis.GetHash();
 
         assert(hashGenesisBlock == uint256("0x5706e2c132a4b9362656fe56568324a9035f540a361f77cadce7af4a55e4b0c8"));
@@ -172,9 +173,9 @@ public:
         bnProofOfWorkLimit[ALGO_QUBIT]  = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_YESCRYPT] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_X11] = CBigNum(~uint256(0) >> 1);
-        genesis.nTime = 1419370259;
-        genesis.nBits = 0x207fffff;
-        genesis.nNonce = 2;
+        genesis.nTime    = 1392144119;
+        genesis.nBits    = 0x1e0ffff0;
+        genesis.nNonce   = 2024049;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 18444;
         strDataDir = "regtest";
