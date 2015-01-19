@@ -1334,7 +1334,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	}
     /* Franko Multi Algo Gravity Well */
     const CBlockIndex   *BlockLastSolved                 = pindexPrevAlgo;
-    const CBlockIndex   *BlockReading                    = pindexLast;
+    const CBlockIndex   *BlockReading                    = pindexPrevAlgo;
 
 
 	int					 AlgoCounter					 = 0;
@@ -1379,7 +1379,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     
     int64_t LatestBlockTime = BlockLastSolved->GetBlockTime();
     // reset blockreading
-	BlockReading = pindexLast;
+	BlockReading = pindexPrevAlgo;
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if (PastBlocksMax > 0 && i > AlgoCounter) { break; }
 		// Makes sure we are only calculating blocks from the specified algo
@@ -1387,8 +1387,8 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 
         PastBlocksMass++;
 
-         if (i == 1)        { PastDifficultyAverage.SetCompact(BlockReading->nBits); }
-                else                { PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
+         if (i == 1){ PastDifficultyAverage.SetCompact(BlockReading->nBits); }
+                else{ PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
                 PastDifficultyAveragePrev = PastDifficultyAverage;
 
         if (LatestBlockTime < BlockReading->GetBlockTime()) {
@@ -1403,8 +1403,12 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
         if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
             PastRateAdjustmentRatio = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
         }
-        EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
-        EventHorizonDeviationFast               = EventHorizonDeviation;
+		if(BlockReading->nHeight >= NEW_BLOCK_TARGET){ 
+			EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
+		}else{
+			EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(28.2)), -1.228));
+		}
+		EventHorizonDeviationFast               = EventHorizonDeviation;
         EventHorizonDeviationSlow               = 1 / EventHorizonDeviation;
 
         if (PastBlocksMass >= PastBlocksMin) {
