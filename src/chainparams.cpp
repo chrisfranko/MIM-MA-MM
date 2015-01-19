@@ -70,7 +70,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
 	
         assert(hashGenesisBlock == uint256("0x5706e2c132a4b9362656fe56568324a9035f540a361f77cadce7af4a55e4b0c8"));
-        assert(genesis.hashMerkleRoot == uint256("0x7e86d7e6d123ba67684125d094d010a6e04ab753fd5d601c024c155c0a4eb51e"));
+        assert(genesis.hashMerkleRoot == uint256("0x552d1bd644091e0689a5f19d20ccb9c173bc087a64b045fc103a5d2a38797bb3"));
 
         vSeeds.push_back(CDNSSeedData("seed1.magicinternetmoney.org", "seed1.magicinternetmoney.org"));
         vSeeds.push_back(CDNSSeedData("seed2.magicinternetmoney.org", "seed2.magicinternetmoney.org"));
