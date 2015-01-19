@@ -2740,14 +2740,14 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CDiskBlockPos* dbp)
 		int nAlgo = block.GetAlgo();
 		int nAlgoCount = 1;
 		CBlockIndex* piPrev = pindexPrev;
-		while (piPrev && (nAlgoCount <= nBlockSequentialAlgoMaxCount))
+		while (nHeight >= NEW_BLOCK_TARGET && piPrev && (nAlgoCount <= nBlockSequentialAlgoMaxCount))
 		{
 			if (piPrev->GetAlgo() != nAlgo)
 				break;
 			nAlgoCount++;
 			piPrev = piPrev->pprev;
 		}
-		if (nAlgoCount > nBlockSequentialAlgoMaxCount)
+		if (nHeight >= NEW_BLOCK_TARGET && nAlgoCount > nBlockSequentialAlgoMaxCount)
 		{
 			return state.DoS(100, error("AcceptBlock() : too many blocks from same algo"),
 							 REJECT_INVALID, "algo-toomany");
