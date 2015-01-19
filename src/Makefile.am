@@ -157,6 +157,8 @@ libbitcoin_common_a_SOURCES = \
   sync.cpp \
   util.cpp \
   version.cpp \
+  scrypt.cpp \
+  scrypt-sse2.cpp \
   blake.c \
   blakefast.c \
   bmw.c \
