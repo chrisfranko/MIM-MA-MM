@@ -1317,7 +1317,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64_t nTime, int algo)
 	return Params().ProofOfWorkLimit(algo).GetCompact();
 }
 
-unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
+unsigned int FrankoMultiAlgoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	
 	unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
     LogPrintf("Proof Of Work Limit For Algo %i, is % i/n", algo, nProofOfWorkLimit);
@@ -1366,7 +1366,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 	for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
 		// Makes sure we are only calculating blocks from the specified algo
-		if (BlockReading->GetAlgo() != algo){ continue; }
+		if (BlockReading->GetAlgo() != algo){BlockReading = BlockReading->pprev; continue; }
 		AlgoCounter++;
 		BlockReading = BlockReading->pprev;
 	}
@@ -1383,7 +1383,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if (PastBlocksMax > 0 && i > AlgoCounter) { break; }
 		// Makes sure we are only calculating blocks from the specified algo
-		if (BlockReading->GetAlgo() != algo){ continue; }
+		if (BlockReading->GetAlgo() != algo){BlockReading = BlockReading->pprev; continue; }
 
         PastBlocksMass++;
 
@@ -1443,7 +1443,7 @@ unsigned int KimotoGravityWell(const CBlockIndex* pindexLast, int algo) {
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
 {
-	      return KimotoGravityWell(pindexLast, algo);
+	      return FrankoMultiAlgoGravityWell(pindexLast, algo);
 }
 /*
 static const int64_t nMinActualTimespanInitial = nAveragingTargetTimespan * (100 - nMaxAdjustUpInitial) / 100;
