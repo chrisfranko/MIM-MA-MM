@@ -88,7 +88,6 @@ BITCOIN_CORE_H = \
   hashqubit.h \
   hashX11.h \
   hashblake.h \
-  yescrypt.h \
   sysendian.h \
   sha256_Y.h
 
@@ -172,9 +171,6 @@ libbitcoin_common_a_SOURCES = \
   simd.c \
   cubehash.c \
   shavite.c \
-  yescryptcommon.c \
-  yescrypt-best.c \
-  yescrypt-platform.c \
   sha256_Y.c \
   $(BITCOIN_CORE_H)
 

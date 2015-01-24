@@ -131,9 +131,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, int algo)
         case ALGO_QUBIT:
             pblock->nVersion |= BLOCK_VERSION_QUBIT;
             break;
-        case ALGO_YESCRYPT:
-            pblock->nVersion |= BLOCK_VERSION_YESCRYPT;
-            break;
         case ALGO_X11:
             pblock->nVersion |= BLOCK_VERSION_X11;
             break;
@@ -535,8 +532,140 @@ void static MinerWaitOnline()
         }
     }
 }
+void static BitcoinMiner(CWallet *pwallet)
+{
+    // Each thread has its own key and counter
+    CReserveKey reservekey(pwallet);
+    unsigned int nExtraNonce = 0;
 
-void static YeScryptMiner(CWallet *pwallet)
+    while(true)
+    {
+        MinerWaitOnline();
+
+        //
+        // Create new block
+        //
+        unsigned int nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
+        CBlockIndex* pindexPrev = chainActive.Tip();
+
+        auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, ALGO_SHA256D));
+        if (!pblocktemplate.get())
+            return;
+        CBlock *pblock = &pblocktemplate->block;
+        IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
+
+        LogPrintf("Running sha256d with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
+               ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
+
+        //
+        // Pre-build hash buffers
+        //
+        char pmidstatebuf[32+16]; char* pmidstate = alignup<16>(pmidstatebuf);
+        char pdatabuf[128+16];    char* pdata     = alignup<16>(pdatabuf);
+        char phash1buf[64+16];    char* phash1    = alignup<16>(phash1buf);
+
+        FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+
+        unsigned int& nBlockTime = *(unsigned int*)(pdata + 64 + 4);
+        unsigned int& nBlockBits = *(unsigned int*)(pdata + 64 + 8);
+        unsigned int& nBlockNonce = *(unsigned int*)(pdata + 64 + 12);
+
+
+        //
+        // Search
+        //
+        int64_t nStart = GetTime();
+        uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
+        uint256 hashbuf[2];
+        uint256& hash = *alignup<16>(hashbuf);
+        while (true)
+        {
+            unsigned int nHashesDone = 0;
+            unsigned int nNonceFound;
+
+            // Crypto++ SHA256
+            nNonceFound = ScanHash_CryptoPP(pmidstate, pdata + 64, phash1,
+                                            (char*)&hash, nHashesDone);
+
+            // Check if something found
+            if (nNonceFound != (unsigned int) -1)
+            {
+                for (unsigned int i = 0; i < sizeof(hash)/4; i++)
+                    ((unsigned int*)&hash)[i] = ByteReverse(((unsigned int*)&hash)[i]);
+
+                if (hash <= hashTarget)
+                {
+                    // Found a solution
+                    pblock->nNonce = ByteReverse(nNonceFound);
+                    assert(hash == pblock->GetHash());
+
+                    SetThreadPriority(THREAD_PRIORITY_NORMAL);
+                    CheckWork(pblock, *pwallet, reservekey);
+                    SetThreadPriority(THREAD_PRIORITY_LOWEST);
+
+                    // In regression test mode, stop mining after a block is found. This
+                    // allows developers to controllably generate a block on demand.
+                    if (Params().NetworkID() == CChainParams::REGTEST)
+                        throw boost::thread_interrupted();
+
+                    break;
+                }
+            }
+
+            // Meter hashes/sec
+            static int64_t nHashCounter;
+            if (nHPSTimerStart == 0)
+            {
+                nHPSTimerStart = GetTimeMillis();
+                nHashCounter = 0;
+            }
+            else
+                nHashCounter += nHashesDone;
+            if (GetTimeMillis() - nHPSTimerStart > 4000)
+            {
+                static CCriticalSection cs;
+                {
+                    LOCK(cs);
+                    if (GetTimeMillis() - nHPSTimerStart > 4000)
+                    {
+                        dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
+                        nHPSTimerStart = GetTimeMillis();
+                        nHashCounter = 0;
+                        static int64_t nLogTime;
+                        if (GetTime() - nLogTime > 30 * 60)
+                        {
+                            nLogTime = GetTime();
+                            LogPrintf("hashmeter %6.0f khash/s\n", dHashesPerSec/1000.0);
+                        }
+                    }
+                }
+            }
+
+            // Check for stop or if block needs to be rebuilt
+            boost::this_thread::interruption_point();
+            if (vNodes.empty() && Params().NetworkID() != CChainParams::REGTEST)
+                break;
+            if (nBlockNonce >= 0xffff0000)
+                break;
+            if (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 60)
+                break;
+            if (pindexPrev != chainActive.Tip())
+                break;
+
+            // Update nTime every few seconds
+            UpdateTime(*pblock, pindexPrev);
+            nBlockTime = ByteReverse(pblock->nTime);
+            if (TestNet())
+            {
+                // Changing pblock->nTime can change work required on testnet:
+                nBlockBits = ByteReverse(pblock->nBits);
+                hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
+            }
+        }
+    }
+}
+
+void static ScryptMiner(CWallet *pwallet)
 {
     // Each thread has its own key and counter
     CReserveKey reservekey(pwallet);
@@ -552,13 +681,13 @@ void static YeScryptMiner(CWallet *pwallet)
         unsigned int nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
         CBlockIndex* pindexPrev = chainActive.Tip();
 
-        auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, ALGO_YESCRYPT));
+        auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey, ALGO_SCRYPT));
         if (!pblocktemplate.get())
             return;
         CBlock *pblock = &pblocktemplate->block;
         IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
             
-        LogPrintf("Running yescrypt miner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
+        LogPrintf("Running scrypt miner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
                ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
 
         //
@@ -582,10 +711,23 @@ void static YeScryptMiner(CWallet *pwallet)
         {
             unsigned int nHashesDone = 0;
             uint256 thash;
-			
+            char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
             while(true)
             {
-				yescrypt_hash_sp(BEGIN(pblock->nVersion), BEGIN(thash));
+#if defined(USE_SSE2)
+                // Detection would work, but in cases where we KNOW it always has SSE2,
+                // it is faster to use directly than to use a function pointer or conditional.
+#if defined(_M_X64) || defined(__x86_64__) || defined(_M_AMD64) || (defined(MAC_OSX) && defined(__i386__))
+                // Always SSE2: x86_64 or Intel MacOS X
+                scrypt_1024_1_1_256_sp_sse2(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+#else
+                // Detect SSE2: 32bit x86 Linux or Windows
+                scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+#endif
+#else
+                // Generic scrypt
+                scrypt_1024_1_1_256_sp_generic(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+#endif
 
                 if (thash <= hashTarget)
                 {
@@ -617,14 +759,14 @@ void static YeScryptMiner(CWallet *pwallet)
                     LOCK(cs);
                     if (GetTimeMillis() - nHPSTimerStart > 4000)
                     {
-                        double dHashesPerSec = 1000.0 * (double)nHashCounter / (double)(GetTimeMillis() - nHPSTimerStart);
+                        dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
                         nHPSTimerStart = GetTimeMillis();
                         nHashCounter = 0;
                         static int64_t nLogTime;
-                        if (GetTime() - nLogTime > 5 * 60)
+                        if (GetTime() - nLogTime > 30 * 60)
                         {
                             nLogTime = GetTime();
-                            LogPrintf("Yescrypt Miner: %6.0f hash/s\n", dHashesPerSec);
+                            LogPrintf("hashmeter %6.0f khash/s\n", dHashesPerSec/1000.0);
                         }
                     }
                 }
@@ -654,7 +796,6 @@ void static YeScryptMiner(CWallet *pwallet)
         }
     }
 }
-
 void static GenericMiner(CWallet *pwallet, int algo)
 {
     // Each thread has its own key and counter
@@ -771,6 +912,12 @@ void static ThreadBitcoinMiner(CWallet *pwallet)
     {
         switch (miningAlgo)
         {
+			case ALGO_SHA256D:
+                BitcoinMiner(pwallet);
+                break;
+            case ALGO_SCRYPT:
+                ScryptMiner(pwallet);
+                break;
             case ALGO_BLAKE:
                 GenericMiner(pwallet, ALGO_BLAKE);
                 break;
@@ -779,9 +926,6 @@ void static ThreadBitcoinMiner(CWallet *pwallet)
                 break;
             case ALGO_QUBIT:
                 GenericMiner(pwallet, ALGO_QUBIT);
-                break;
-            case ALGO_YESCRYPT:
-				YeScryptMiner(pwallet);
                 break;
             case ALGO_X11:
                 GenericMiner(pwallet, ALGO_X11);

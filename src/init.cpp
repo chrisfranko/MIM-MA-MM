@@ -307,7 +307,7 @@ std::string HelpMessage(HelpMessageMode hmm)
     strUsage += "  -blockminsize=<n>      " + _("Set minimum block size in bytes (default: 0)") + "\n";
     strUsage += "  -blockmaxsize=<n>      " + strprintf(_("Set maximum block size in bytes (default: %d)"), DEFAULT_BLOCK_MAX_SIZE) + "\n";
     strUsage += "  -blockprioritysize=<n> " + strprintf(_("Set maximum size of high-priority/low-fee transactions in bytes (default: %d)"), DEFAULT_BLOCK_PRIORITY_SIZE) + "\n";
-    strUsage += "  -algo=<algo>           " + _("Mining algorithm: blake, skein, qubit, yescrypt, X11") + "\n";
+    strUsage += "  -algo=<algo>           " + _("Mining algorithm: blake, skein, qubit, z X11") + "\n";
 
     strUsage += "\n" + _("RPC server options:") + "\n";
     strUsage += "  -server                " + _("Accept command line and JSON-RPC commands") + "\n";
@@ -522,16 +522,14 @@ bool AppInit2(boost::thread_group& threadGroup)
     transform(strAlgo.begin(),strAlgo.end(),strAlgo.begin(),::tolower);
 	if (strAlgo == "scrypt")
         miningAlgo = ALGO_SCRYPT;
-	else if (strAlgo == "sha" || strAlgo =="sha256" || strAlgo == "sha245d")
-        miningAlgo = ALGO_YESCRYPT;
+	else if (strAlgo == "sha" || strAlgo == "sha256")
+        miningAlgo = ALGO_SHA256D;
     else if (strAlgo == "blake" || strAlgo == "blake256")
         miningAlgo = ALGO_BLAKE;
     else if (strAlgo == "skein" || strAlgo == "skeinsha2")
         miningAlgo = ALGO_SKEIN;
     else if (strAlgo == "q2c" || strAlgo == "qubit")
         miningAlgo = ALGO_QUBIT;
-    else if (strAlgo == "yescrypt")
-        miningAlgo = ALGO_YESCRYPT;
     else if (strAlgo == "x11")
         miningAlgo = ALGO_X11;
     else

@@ -80,7 +80,6 @@ Value getinfo(const Array& params, bool fHelp)
     obj.push_back(Pair("difficulty_blake", (double)GetDifficulty(NULL, ALGO_BLAKE)));
     obj.push_back(Pair("difficulty_skein",   (double)GetDifficulty(NULL, ALGO_SKEIN)));
     obj.push_back(Pair("difficulty_qubit",   (double)GetDifficulty(NULL, ALGO_QUBIT)));
-    obj.push_back(Pair("difficulty_yescrypt",  (double)GetDifficulty(NULL, ALGO_YESCRYPT)));
     obj.push_back(Pair("difficulty_X11", (double)GetDifficulty(NULL, ALGO_X11)));
     obj.push_back(Pair("testnet",            TestNet()));
 #ifdef ENABLE_WALLET

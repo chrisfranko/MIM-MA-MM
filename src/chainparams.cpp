@@ -40,7 +40,6 @@ public:
         bnProofOfWorkLimit[ALGO_BLAKE] = CBigNum(~uint256(0) >> 20);
         bnProofOfWorkLimit[ALGO_SKEIN] = CBigNum(~uint256(0) >> 20);
         bnProofOfWorkLimit[ALGO_QUBIT]  = CBigNum(~uint256(0) >> 20);
-        bnProofOfWorkLimit[ALGO_YESCRYPT] = CBigNum(~uint256(0) >> 16);
         bnProofOfWorkLimit[ALGO_X11] = CBigNum(~uint256(0) >> 20);
         //nSubsidyHalvingInterval = 210000;
 
@@ -171,7 +170,6 @@ public:
         bnProofOfWorkLimit[ALGO_BLAKE] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_SKEIN] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_QUBIT]  = CBigNum(~uint256(0) >> 1);
-        bnProofOfWorkLimit[ALGO_YESCRYPT] = CBigNum(~uint256(0) >> 1);
         bnProofOfWorkLimit[ALGO_X11] = CBigNum(~uint256(0) >> 1);
         genesis.nTime    = 1392144119;
         genesis.nBits    = 0x1e0ffff0;

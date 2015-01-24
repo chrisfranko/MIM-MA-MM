@@ -14,7 +14,6 @@
 #include "hashqubit.h"
 #include "hashblake.h"
 #include "hashX11.h"
-#include "yescrypt.h"
 
 #include <stdint.h>
 
@@ -24,7 +23,6 @@ enum {
     ALGO_BLAKE = 2,
     ALGO_SKEIN = 3,
     ALGO_QUBIT = 4,
-    ALGO_YESCRYPT = 5,
     ALGO_X11 = 6,
     NUM_ALGOS };
 
@@ -39,8 +37,7 @@ enum
 	BLOCK_VERSION_BLAKE      = (2 << 9),
     BLOCK_VERSION_SKEIN      = (3 << 9),
     BLOCK_VERSION_QUBIT      = (4 << 9),
-    BLOCK_VERSION_YESCRYPT   = (5 << 9),
-    BLOCK_VERSION_X11        = (6 << 9),
+    BLOCK_VERSION_X11        = (5 << 9),
 };
 
 inline int GetAlgo(int nVersion)
@@ -57,8 +54,6 @@ inline int GetAlgo(int nVersion)
             return ALGO_SKEIN;
         case BLOCK_VERSION_QUBIT:
             return ALGO_QUBIT;
-        case BLOCK_VERSION_YESCRYPT:
-            return ALGO_YESCRYPT;
         case BLOCK_VERSION_X11:
             return ALGO_X11;
     }
@@ -79,8 +74,6 @@ inline std::string GetAlgoName(int Algo)
             return std::string("Skein");
         case ALGO_QUBIT:
             return std::string("Qubit");
-        case ALGO_YESCRYPT:
-            return std::string("Yescrypt");
         case ALGO_X11:
             return std::string("X11");
     }
@@ -523,12 +516,6 @@ public:
                 return HashSkein(BEGIN(nVersion), END(nNonce));
             case ALGO_QUBIT:
                 return HashQubit(BEGIN(nVersion), END(nNonce));
-            case ALGO_YESCRYPT:
-				{
-					uint256 thash;
-					yescrypt_hash(BEGIN(nVersion), BEGIN(thash));
-					return thash;
-				}
             case ALGO_X11:
 				return HashX11(BEGIN(nVersion), END(nNonce));
         }
