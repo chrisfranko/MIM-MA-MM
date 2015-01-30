@@ -1406,7 +1406,7 @@ unsigned int FrankoMultiAlgoGravityWell(const CBlockIndex* pindexLast, int algo)
 		if(BlockReading->nHeight >= NEW_BLOCK_TARGET){ 
 			EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
 		}else{
-			EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(28.2)), -1.228));
+			EventHorizonDeviation                   = 1 + (0.7084 * pow((double(PastBlocksMass)/double(28.8)), -1.228));
 		}
 		EventHorizonDeviationFast               = EventHorizonDeviation;
         EventHorizonDeviationSlow               = 1 / EventHorizonDeviation;
